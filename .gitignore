@@ -1,2 +1,5 @@
 IAEA/
 IESO/
+*.ratdb
+*.pyc
+*~
