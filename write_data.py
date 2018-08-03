@@ -17,10 +17,21 @@ def write_to_csv():
     Write data in csv format
     """
 
-def write_to_ratdb(inData):
+def write_to_ratdb(inData, year, month=''):
     """
     Write data with RATDB standard in JSON format
     """
+
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    month_index = None
+    const_index = None
+
+    # if month is not '':
+    if month in months:
+        const_index = months.index(month)
+    else:
+        print('Could not parse the month input.')
+        return 0
 
     if isinstance(inData, dict):
         ratdbTypes = ["PHWR", "PWR", "BWR", "LWGR", "GCR", "FBR"]
@@ -30,11 +41,32 @@ def write_to_ratdb(inData):
 
         for (reactor, data) in inData.items():
 
+            if const_index is not None:
+                month_index = const_index
+                # month_index = const_index.copy()
+                try:
+                    if months[month_index] in data["month_operational"]:
+                        if data['month_operational'].index(month) != month_index:
+                            print('Month index correction for reactor {}.'.format(reactor))
+                            month_index = data['month_operational'].index(month)
+
+                            if len(data['month_operational']) != len(data["month_data"]):
+                                print('Check inconsistent data! We need a correction for zero padding (when there are 0 loading factors, sometimes there are not associated month names). There is/are {} 0 value/s in data.'.format(data["month_data"].count(0)))
+                    else:
+                        print('Reactor {} was not operational during {}.'.format(reactor, month))
+                        continue
+                except:
+                    print(months[month_index], data["month_operational"])
+                    continue
+
             # print reactor, data
             # if previous_reactor in [reactor[:-2], reactor]:
             if previous_reactor == reactor[:-2] or previous_reactor == reactor:
                 reactors[previous_reactor]["no_cores"] += 1
-                power = "{x:6.2f}".format(x=data["year"]*data["thermal_power"]/100.)
+                if month_index is not None:
+                    power = "{x:6.2f}".format(x=data["month_data"][month_index]*data["thermal_power"]/100.)
+                else:
+                    power = "{x:6.2f}".format(x=data["year"]*data["thermal_power"]/100.)
                 # reactors[previous_reactor]["core_power"].append(data["year"]*data["thermal_power"]/100.)
                 reactors[previous_reactor]["core_power"].append(float(power))
                 # reactors[previous_reactor]["core_spectrum"].append(data["type"])
@@ -46,7 +78,7 @@ def write_to_ratdb(inData):
                         break
 
                 if foundSpectrum is not True:
-                    print "Counld not find spectrum for " + data["type"] + "."
+                    print "Could not find spectrum for " + data["type"] + "."
 
             else:
                 separator = "-"
@@ -69,7 +101,10 @@ def write_to_ratdb(inData):
                 reactors[name]["comment"] = ""
                 reactors[name]["timestamp"] = ""
                 reactors[name]["no_cores"] = 1
-                power = "{x:6.2f}".format(x=data["year"]*data["thermal_power"]/100.)
+                if month_index is not None:
+                    power = "{x:6.2f}".format(x=data["month_data"][month_index]*data["thermal_power"]/100.)
+                else:
+                    power = "{x:6.2f}".format(x=data["year"]*data["thermal_power"]/100.)
                 # reactors[name]["core_power"] = [data["year"]*data["thermal_power"]/100.]
                 reactors[name]["core_power"] = [float(power)]
                 # reactors[name]["core_spectrum"] = [data["type"]]
@@ -102,7 +137,10 @@ def write_to_ratdb(inData):
                         print('{a}: {b},'.format(a=key,b=value))
                 print "}\n"
 
-        f = "REACTORS_STATUS.ratdb"
+        if month_index is not None:
+            f = "REACTORS_STATUS_{}_{}.ratdb".format(year, months[month_index])
+        else:
+            f = "REACTORS_STATUS_{}.ratdb".format(year)
         with open(f, 'w') as outF:
             reactors = OrderedDict(sorted(reactors.items(), key=lambda t: t[0]))
             for reactor, data in reactors.items():
@@ -139,6 +177,9 @@ def main():
     parser.add_argument('--year', '-y', type=int, default=2017,
                         dest='year', required=False,
                         help='The year of the reactor data (e.g. 2017, for IAEA data published in 2018).')
+    parser.add_argument('--month', '-m', type=str, default='',
+                        dest='month', required=False,
+                        help="The month as in ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec') for the requested data.")
     # parser.add_argument('--format', '-f', type=str, default="RATDB",
     #                     dest='format', required=True,
     #                     help='The standard of the data in the output file.')
@@ -148,7 +189,7 @@ def main():
     print(args)
 
     # Write data
-    write_to_ratdb(read(args.year))
+    write_to_ratdb(read(args.year), args.year, args.month)
 
 if __name__ == '__main__':
     main()

@@ -48,12 +48,15 @@ def read(year):
     yearDataTag = False
     yearLFTag = -1
     montlyLFTag = -1
+    months_of_operation_tag = False
+    months_parsing_space = -1
     rTypeTag = -1
     rPowerTag = -1
 
     rType = ""
     rPower = 0
     monthlyLF = []
+    months_of_operation = []
     allLFData = False
     rYearlyData = OrderedDict()
 
@@ -101,6 +104,23 @@ def read(year):
                 if "Annual Production Results (" + str(year) + ")" in line:
                     yearDataTag = True
 
+                if "Annual Summary" in line:
+                    months_of_operation_tag = True
+                    months_parsing_space += 1
+
+                if months_of_operation_tag:
+                    if line.strip() in ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'):
+                        months_of_operation.append(line.strip())
+                        months_parsing_space -= 1
+                    elif months_parsing_space == 3:
+                        rYearlyData[rNAME]["month_operational"] = months_of_operation
+
+                        months_of_operation = []
+                        months_of_operation_tag = False
+                        months_parsing_space = -1
+                    else:
+                        months_parsing_space += 1
+
                 if yearDataTag:
                     if "Load Factor (LF)" in line:
                         yearLFTag = 0
@@ -128,7 +148,7 @@ def read(year):
                         monthlyLF.append(float(line.strip()))
                         # print monthlyLF
                     if len(monthlyLF) == 12 or allLFData:
-                        rYearlyData[rNAME]["month"] = monthlyLF
+                        rYearlyData[rNAME]["month_data"] = monthlyLF
 
                         montlyLFTag = -1
                         allLFData = False
@@ -152,9 +172,9 @@ def read(year):
                 print reactor, json.dumps(data, sort_keys=True, indent=4,
                     separators=(',', ': '))
 
-                if "CATAWBA" in reactor:
-                    print reactor, json.dumps(data, sort_keys=True, indent=4,
-                        separators=(',', ': '))
+                # if "CATAWBA" in reactor:
+                #     print reactor, json.dumps(data, sort_keys=True, indent=4,
+                #         separators=(',', ': '))
 
 
         print "Found " + str(count) + " statuses." # number of reactors in the data
