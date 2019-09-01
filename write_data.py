@@ -30,8 +30,7 @@ def write_to_ratdb(inData, year, month=''):
     if month in months:
         const_index = months.index(month)
     else:
-        print('Could not parse the month input.')
-        return 0
+        print('There is no month input.')
 
     if isinstance(inData, dict):
         ratdbTypes = ["PHWR", "PWR", "BWR", "LWGR", "GCR", "FBR"]
