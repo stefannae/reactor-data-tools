@@ -63,9 +63,10 @@ def write_to_ratdb(inData, year, month=''):
             if previous_reactor == reactor[:-2] or previous_reactor == reactor:
                 reactors[previous_reactor]["no_cores"] += 1
                 if month_index is not None:
-                    power = "{x:6.2f}".format(x=data["month_data"][month_index]*data["thermal_power"]/100.)
+                    # power = "{x:6.2f}".format(x=data["month_data"][month_index]*data["thermal_power"]/100.)
+                    power = "{x:6.2f}".format(x=data["thermal_power"])
                 else:
-                    power = "{x:6.2f}".format(x=data["year"]*data["thermal_power"]/100.)
+                    power = "{x:6.2f}".format(x=data["thermal_power"])
                 # reactors[previous_reactor]["core_power"].append(data["year"]*data["thermal_power"]/100.)
                 reactors[previous_reactor]["core_power"].append(float(power))
                 # reactors[previous_reactor]["core_spectrum"].append(data["type"])
@@ -101,9 +102,11 @@ def write_to_ratdb(inData, year, month=''):
                 reactors[name]["timestamp"] = ""
                 reactors[name]["no_cores"] = 1
                 if month_index is not None:
-                    power = "{x:6.2f}".format(x=data["month_data"][month_index]*data["thermal_power"]/100.)
+                    # power = "{x:6.2f}".format(x=data["month_data"][month_index]*data["thermal_power"]/100.)
+                    power = "{x:6.2f}".format(x=data["thermal_power"])
                 else:
-                    power = "{x:6.2f}".format(x=data["year"]*data["thermal_power"]/100.)
+                    # power = "{x:6.2f}".format(x=data["year"]*data["thermal_power"]/100.)
+                    power = "{x:6.2f}".format(x=data["thermal_power"])
                 # reactors[name]["core_power"] = [data["year"]*data["thermal_power"]/100.]
                 reactors[name]["core_power"] = [float(power)]
                 # reactors[name]["core_spectrum"] = [data["type"]]
