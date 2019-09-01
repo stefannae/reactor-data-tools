@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# . get_IAEA_data.sh 2018 OPEX-2019CD
+# http://www-pub.iaea.org/MTCD/Publications/PDF/OPEX-2019CD.zip
+# . get_IAEA_data.sh 2017 P1828_OPEX_CD_web
 # . get_IAEA_data.sh 2016 P1792_OPEX_CD_web
 # . get_IAEA_data.sh 2015 P1752_OPEX_CD_web
 
@@ -38,18 +41,33 @@ else
   wget $URL
   # unpack
   unzip $ARCHIVE".zip" -d $ARCHIVE
-  # convert to text
-  # should it be less than of equal to?
-  if [ "$YEAR" == "2015" ]
-  then
-    filename="OPEX_"$(expr $YEAR + 1)""
-    input=$ARCHIVE"/PDF/"$filename".pdf"
-    output=$ARCHIVE"/PDF/"$filename"_edition.txt"
-  else
-    filename="OPEX_"$(expr $YEAR + 1)"_edition"
-    input=$ARCHIVE"/PDF/"$filename".pdf"
-    output=$ARCHIVE"/PDF/"$filename".txt"
-  fi
+fi
+
+# convert to text
+# should it be less than of equal to?
+if [ "$YEAR" == "2018" ]
+then
+  filename="OPEX-"$(expr $YEAR + 1)"-edition_rev"
+  input=$ARCHIVE"/PDF/"$filename".pdf"
+  output=$ARCHIVE"/PDF/OPEX_"$(expr $YEAR + 1)"_edition.txt"
+elif [ "$YEAR" == "2015" ]
+then
+  filename="OPEX_"$(expr $YEAR + 1)""
+  input=$ARCHIVE"/PDF/"$filename".pdf"
+  output=$ARCHIVE"/PDF/"$filename"_edition.txt"
+else
+  filename="OPEX_"$(expr $YEAR + 1)"_edition"
+  input=$ARCHIVE"/PDF/"$filename".pdf"
+  output=$ARCHIVE"/PDF/"$filename".txt"
+fi
+
+# Also check the input and unzip if missing
+
+if [ -f $output ]
+then
+  echo "A file with the same name is already available: "$output
+else
   pdftotext $input $output
 fi
+
 cd ../..

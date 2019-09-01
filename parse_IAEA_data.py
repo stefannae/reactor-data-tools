@@ -14,7 +14,11 @@ def read(year):
 
     # Adapt this to search for the available data. Create a file for data sources. It will be used by both the get_IAEA_data.sh and this script.
     print "Checking available file paths for " + str(year) + " ...",
-    if year == 2017:
+    if year == 2018:
+        year_published = year + 1
+        filepath += "IAEA/2018/OPEX-2019CD/PDF/"
+        print "OK."
+    elif year == 2017:
         year_published = year + 1
         filepath += "IAEA/2017/P1828_OPEX_CD_web/PDF/"
         print "OK."
